@@ -29,8 +29,7 @@ public class PedidoServiceImpl implements PedidoService {
 
     @Override
     @Transactional
-    public PedidoResponse criarPedido(CriarPedidoRequest request) {
-        // Validar se cliente tem pelo menos 2 caracteres
+    public PedidoResponse criarPedido(CriarPedidoRequest request) { //Min. 2 caracteres para o nome do cliente
         if (request.getCliente().trim().length() < 2) {
             throw new BusinessException("Nome do cliente deve ter pelo menos 2 caracteres");
         }
@@ -74,12 +73,10 @@ public class PedidoServiceImpl implements PedidoService {
     @Override
     @Transactional(readOnly = true)
     public List<PedidoResponse> listarComFiltros(String cliente, StatusPedido status, LocalDate data) {
-        // Se não houver filtros, retorna todos ordenados
         if (cliente == null && status == null && data == null) {
             return listarTodos();
         }
 
-        // Pega todos os pedidos e filtra em memória
         List<Pedido> todosPedidos = pedidoRepository.findAllByOrderByDataPedidoDesc();
 
         return todosPedidos.stream()
@@ -98,8 +95,6 @@ public class PedidoServiceImpl implements PedidoService {
         return converterParaResponse(pedido);
     }
 
-    // REMOVIDO: buscarPorIdCompra - não existe mais idCompra
-
     @Override
     @Transactional
     public PedidoResponse atualizarPedido(Long id, AtualizarPedidoRequest request) {
@@ -116,7 +111,6 @@ public class PedidoServiceImpl implements PedidoService {
 
         if (request.getTamanho() != null && !request.getTamanho().isEmpty()) {
             pedido.setTamanho(request.getTamanho());
-            // Se mudou o tamanho, recalcular o preço
             pedido.setPreco(calcularPreco(request.getTamanho()));
         }
 
@@ -151,15 +145,14 @@ public class PedidoServiceImpl implements PedidoService {
     @Override
     @Transactional(readOnly = true)
     public EstatisticasResponse obterEstatisticas() {
-        Long totalPedidos = pedidoRepository.count();
+        Long totalPedidos = pedidoRepository.count();       //pedidos com a data de hoje
 
-        // Pedidos hoje - usando dataPedido agora
         LocalDateTime inicioHoje = LocalDateTime.now().with(LocalTime.MIN);
         LocalDateTime fimHoje = LocalDateTime.now().with(LocalTime.MAX);
         Long pedidosHoje = pedidoRepository.countByDataPedidoBetween(inicioHoje, fimHoje);
 
-        // Receita total
-        BigDecimal receitaTotal = BigDecimal.ZERO;
+
+        BigDecimal receitaTotal = BigDecimal.ZERO;  //receita total
         List<Pedido> todosPedidos = pedidoRepository.findAll();
         for (Pedido pedido : todosPedidos) {
             if (pedido.getPreco() != null) {
@@ -167,7 +160,6 @@ public class PedidoServiceImpl implements PedidoService {
             }
         }
 
-        // Receita hoje
         BigDecimal receitaHoje = BigDecimal.ZERO;
         List<Pedido> pedidosHojeList = pedidoRepository.findByDataPedidoBetween(inicioHoje, fimHoje);
         for (Pedido pedido : pedidosHojeList) {
@@ -197,7 +189,7 @@ public class PedidoServiceImpl implements PedidoService {
         response.setPreco(pedido.getPreco());
         response.setObservacoes(pedido.getObservacoes());
         response.setStatus(pedido.getStatus());
-        response.setDataPedido(pedido.getDataPedido());  // Alterado de dataCriacao para dataPedido
+        response.setDataPedido(pedido.getDataPedido());
         return response;
     }
 }

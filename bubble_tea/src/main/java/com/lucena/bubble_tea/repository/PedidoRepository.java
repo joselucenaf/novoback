@@ -12,13 +12,8 @@ import java.util.List;
 public interface PedidoRepository extends JpaRepository<Pedido, Long> {
 
     List<Pedido> findByStatus(StatusPedido status);
-
     List<Pedido> findByClienteContainingIgnoreCase(String cliente);
-
-    // Métodos para ordenação - usando dataPedido agora
     List<Pedido> findAllByOrderByDataPedidoDesc();
-
-    // Métodos para estatísticas - usando dataPedido agora
     Long countByDataPedidoBetween(LocalDateTime inicio, LocalDateTime fim);
 
     List<Pedido> findByDataPedidoBetween(LocalDateTime inicio, LocalDateTime fim);

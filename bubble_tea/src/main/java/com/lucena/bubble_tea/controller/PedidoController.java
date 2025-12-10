@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
-
+                                            //endpoints para o teste no postman
 @RestController
 @RequestMapping("/pedidos")
 @CrossOrigin(origins = "${cors.allowed-origins}")
@@ -46,8 +46,6 @@ public class PedidoController {
         PedidoResponse response = pedidoService.buscarPorId(id);
         return ResponseEntity.ok(response);
     }
-
-    // REMOVIDO: endpoint buscarPorIdCompra
 
     @PutMapping("/{id}")
     public ResponseEntity<PedidoResponse> atualizarPedido(

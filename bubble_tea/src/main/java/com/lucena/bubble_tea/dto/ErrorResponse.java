@@ -15,9 +15,8 @@ public class ErrorResponse {
     private String message;
     private String path;
 
-    // Construtor para uso comum
     public ErrorResponse(int status, String error, String message, String path) {
-        this(); // Chama o construtor sem argumentos que inicializa o timestamp
+        this();
         this.status = status;
         this.error = error;
         this.message = message;

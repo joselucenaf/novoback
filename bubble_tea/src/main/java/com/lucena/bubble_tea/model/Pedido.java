@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "pedidos")
 public class Pedido {
-
+                                    //Definição das entidade - pedido
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

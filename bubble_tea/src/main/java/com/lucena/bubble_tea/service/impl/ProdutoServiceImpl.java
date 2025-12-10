@@ -48,7 +48,7 @@ public class ProdutoServiceImpl implements ProdutoService {
     @PostConstruct
     @Transactional
     public void inicializarProdutosPadrao() {
-        // Verificar se já existem produtos
+                                                    // verificar se já existem produtos
         if (produtoRepository.count() == 0) {
             criarProdutoPadrao("Chá Verde",
                     "Chá verde tradicional com pearls de tapioca.",

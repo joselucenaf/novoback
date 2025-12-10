@@ -19,5 +19,5 @@ public class PedidoResponse {
     private BigDecimal preco;
     private String observacoes;
     private StatusPedido status;
-    private LocalDateTime dataPedido;  // Alterado de dataCriacao para dataPedido
+    private LocalDateTime dataPedido;
 }

@@ -19,48 +19,36 @@
     </properties>
 
     <dependencies>
-        <!-- ==================== -->
-        <!-- SPRING BOOT STARTERS -->
-        <!-- ==================== -->
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-        <!-- ESSENCIAL: Spring Data JPA -->
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
 
-        <!-- ESSENCIAL: Validação de dados -->
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
-        <!-- ==================== -->
-        <!-- BANCO DE DADOS -->
-        <!-- ==================== -->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
         </dependency>
 
-        <!-- ==================== -->
-        <!-- UTILITÁRIOS -->
-        <!-- ==================== -->
-        <!-- LOMBOK CORRIGIDO: Use esta dependência -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
 
-        <!-- ==================== -->
-        <!-- TESTES -->
-        <!-- ==================== -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -83,7 +71,6 @@
                 </configuration>
             </plugin>
 
-            <!-- Plugin para compilação com Lombok -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
