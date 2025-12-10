@@ -19,7 +19,7 @@ public interface PedidoService {
 
     PedidoResponse buscarPorId(Long id);
 
-    PedidoResponse buscarPorIdCompra(String idCompra);
+    // REMOVIDO: PedidoResponse buscarPorIdCompra(String idCompra);
 
     PedidoResponse atualizarPedido(Long id, AtualizarPedidoRequest request);
 

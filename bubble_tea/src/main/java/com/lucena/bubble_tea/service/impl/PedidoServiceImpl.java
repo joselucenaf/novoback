@@ -18,9 +18,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,12 +35,8 @@ public class PedidoServiceImpl implements PedidoService {
             throw new BusinessException("Nome do cliente deve ter pelo menos 2 caracteres");
         }
 
-        // Gerar ID de compra único
-        String idCompra = gerarIdCompra();
-
-        // Criar pedido
+        // Criar pedido (sem gerar idCompra)
         Pedido pedido = new Pedido();
-        pedido.setIdCompra(idCompra);
         pedido.setCliente(request.getCliente().trim());
         pedido.setTipoCha(request.getTipoCha());
         pedido.setTamanho(request.getTamanho());
@@ -53,40 +47,10 @@ public class PedidoServiceImpl implements PedidoService {
 
         pedido.setObservacoes(request.getObservacoes());
         pedido.setStatus(StatusPedido.PENDENTE);
-        pedido.setDataCriacao(LocalDateTime.now());
-        pedido.setDataAtualizacao(LocalDateTime.now());
+        pedido.setDataPedido(LocalDateTime.now());
 
         Pedido salvo = pedidoRepository.save(pedido);
         return converterParaResponse(salvo);
-    }
-
-    private String gerarIdCompra() {
-        // Busca o MAIOR id_compra existente, não o count
-        Optional<String> ultimoIdCompra = pedidoRepository.findAll()
-                .stream()
-                .map(Pedido::getIdCompra)
-                .filter(id -> id.startsWith("BTS"))
-                .max(Comparator.naturalOrder());
-
-        int sequencial = 1;
-        int ano = LocalDate.now().getYear() % 100;
-
-        if (ultimoIdCompra.isPresent()) {
-            String ultimoId = ultimoIdCompra.get();
-            // Extrai o sequencial do último ID: BTS000525 → 525
-            try {
-                String numeroStr = ultimoId.substring(3, 7); // Pega "0005"
-                sequencial = Integer.parseInt(numeroStr) + 1;
-            } catch (NumberFormatException e) {
-                // Se falhar, usa count + 1
-                sequencial = (int) pedidoRepository.count() + 1;
-            }
-        } else {
-            // Primeiro pedido
-            sequencial = 1;
-        }
-
-        return String.format("BTS%04d%02d", sequencial, ano);
     }
 
     private BigDecimal calcularPreco(String tamanho) {
@@ -101,7 +65,7 @@ public class PedidoServiceImpl implements PedidoService {
     @Override
     @Transactional(readOnly = true)
     public List<PedidoResponse> listarTodos() {
-        List<Pedido> pedidos = pedidoRepository.findAllByOrderByDataCriacaoDesc();
+        List<Pedido> pedidos = pedidoRepository.findAllByOrderByDataPedidoDesc();
         return pedidos.stream()
                 .map(this::converterParaResponse)
                 .collect(Collectors.toList());
@@ -115,13 +79,13 @@ public class PedidoServiceImpl implements PedidoService {
             return listarTodos();
         }
 
-        // Pega todos os pedidos e filtra em memória (simples para desenvolvimento)
-        List<Pedido> todosPedidos = pedidoRepository.findAllByOrderByDataCriacaoDesc();
+        // Pega todos os pedidos e filtra em memória
+        List<Pedido> todosPedidos = pedidoRepository.findAllByOrderByDataPedidoDesc();
 
         return todosPedidos.stream()
                 .filter(p -> cliente == null || p.getCliente().toLowerCase().contains(cliente.toLowerCase()))
                 .filter(p -> status == null || p.getStatus() == status)
-                .filter(p -> data == null || p.getDataCriacao().toLocalDate().equals(data))
+                .filter(p -> data == null || p.getDataPedido().toLocalDate().equals(data))
                 .map(this::converterParaResponse)
                 .collect(Collectors.toList());
     }
@@ -134,13 +98,7 @@ public class PedidoServiceImpl implements PedidoService {
         return converterParaResponse(pedido);
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public PedidoResponse buscarPorIdCompra(String idCompra) {
-        Pedido pedido = pedidoRepository.findByIdCompra(idCompra)
-                .orElseThrow(() -> new ResourceNotFoundException("Pedido", idCompra));
-        return converterParaResponse(pedido);
-    }
+    // REMOVIDO: buscarPorIdCompra - não existe mais idCompra
 
     @Override
     @Transactional
@@ -152,11 +110,20 @@ public class PedidoServiceImpl implements PedidoService {
             pedido.setCliente(request.getCliente().trim());
         }
 
+        if (request.getTipoCha() != null && !request.getTipoCha().isEmpty()) {
+            pedido.setTipoCha(request.getTipoCha());
+        }
+
+        if (request.getTamanho() != null && !request.getTamanho().isEmpty()) {
+            pedido.setTamanho(request.getTamanho());
+            // Se mudou o tamanho, recalcular o preço
+            pedido.setPreco(calcularPreco(request.getTamanho()));
+        }
+
         if (request.getObservacoes() != null) {
             pedido.setObservacoes(request.getObservacoes());
         }
 
-        pedido.setDataAtualizacao(LocalDateTime.now());
         Pedido atualizado = pedidoRepository.save(pedido);
         return converterParaResponse(atualizado);
     }
@@ -168,8 +135,6 @@ public class PedidoServiceImpl implements PedidoService {
                 .orElseThrow(() -> new ResourceNotFoundException("Pedido", id));
 
         pedido.setStatus(novoStatus);
-        pedido.setDataAtualizacao(LocalDateTime.now());
-
         Pedido atualizado = pedidoRepository.save(pedido);
         return converterParaResponse(atualizado);
     }
@@ -188,12 +153,12 @@ public class PedidoServiceImpl implements PedidoService {
     public EstatisticasResponse obterEstatisticas() {
         Long totalPedidos = pedidoRepository.count();
 
-        // Pedidos hoje
+        // Pedidos hoje - usando dataPedido agora
         LocalDateTime inicioHoje = LocalDateTime.now().with(LocalTime.MIN);
         LocalDateTime fimHoje = LocalDateTime.now().with(LocalTime.MAX);
-        Long pedidosHoje = pedidoRepository.countByDataCriacaoBetween(inicioHoje, fimHoje);
+        Long pedidosHoje = pedidoRepository.countByDataPedidoBetween(inicioHoje, fimHoje);
 
-        // Receita total (calcula em memória para simplificar)
+        // Receita total
         BigDecimal receitaTotal = BigDecimal.ZERO;
         List<Pedido> todosPedidos = pedidoRepository.findAll();
         for (Pedido pedido : todosPedidos) {
@@ -202,9 +167,9 @@ public class PedidoServiceImpl implements PedidoService {
             }
         }
 
-        // Receita hoje (calcula em memória para simplificar)
+        // Receita hoje
         BigDecimal receitaHoje = BigDecimal.ZERO;
-        List<Pedido> pedidosHojeList = pedidoRepository.findByDataCriacaoBetween(inicioHoje, fimHoje);
+        List<Pedido> pedidosHojeList = pedidoRepository.findByDataPedidoBetween(inicioHoje, fimHoje);
         for (Pedido pedido : pedidosHojeList) {
             if (pedido.getPreco() != null) {
                 receitaHoje = receitaHoje.add(pedido.getPreco());
@@ -226,15 +191,13 @@ public class PedidoServiceImpl implements PedidoService {
     private PedidoResponse converterParaResponse(Pedido pedido) {
         PedidoResponse response = new PedidoResponse();
         response.setId(pedido.getId());
-        response.setIdCompra(pedido.getIdCompra());
         response.setCliente(pedido.getCliente());
         response.setTipoCha(pedido.getTipoCha());
         response.setTamanho(pedido.getTamanho());
         response.setPreco(pedido.getPreco());
         response.setObservacoes(pedido.getObservacoes());
         response.setStatus(pedido.getStatus());
-        response.setDataCriacao(pedido.getDataCriacao());
-        response.setDataAtualizacao(pedido.getDataAtualizacao());
+        response.setDataPedido(pedido.getDataPedido());  // Alterado de dataCriacao para dataPedido
         return response;
     }
 }

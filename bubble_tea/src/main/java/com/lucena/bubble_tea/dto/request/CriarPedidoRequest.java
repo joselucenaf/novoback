@@ -1,8 +1,12 @@
 package com.lucena.bubble_tea.dto.request;
 
 import jakarta.validation.constraints.*;
-import java.math.BigDecimal;
+import lombok.Getter;
+import lombok.Setter;
 
+import java.math.BigDecimal;
+@Getter
+@Setter
 public class CriarPedidoRequest {
 
     @NotBlank(message = "Nome do cliente é obrigatório")
@@ -25,19 +29,4 @@ public class CriarPedidoRequest {
     @Size(max = 500, message = "Observações não pode exceder 500 caracteres")
     private String observacoes;
 
-    // Getters e Setters
-    public String getCliente() { return cliente; }
-    public void setCliente(String cliente) { this.cliente = cliente; }
-
-    public String getTipoCha() { return tipoCha; }
-    public void setTipoCha(String tipoCha) { this.tipoCha = tipoCha; }
-
-    public String getTamanho() { return tamanho; }
-    public void setTamanho(String tamanho) { this.tamanho = tamanho; }
-
-    public BigDecimal getPreco() { return preco; }
-    public void setPreco(BigDecimal preco) { this.preco = preco; }
-
-    public String getObservacoes() { return observacoes; }
-    public void setObservacoes(String observacoes) { this.observacoes = observacoes; }
 }

@@ -1,27 +1,26 @@
 package com.lucena.bubble_tea.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
 public class ErrorResponse {
-    private LocalDateTime timestamp;
+    private LocalDateTime timestamp = LocalDateTime.now();
     private int status;
     private String error;
     private String message;
     private String path;
 
-    // Construtor
+    // Construtor para uso comum
     public ErrorResponse(int status, String error, String message, String path) {
-        this.timestamp = LocalDateTime.now();
+        this(); // Chama o construtor sem argumentos que inicializa o timestamp
         this.status = status;
         this.error = error;
         this.message = message;
         this.path = path;
     }
-
-    // Getters
-    public LocalDateTime getTimestamp() { return timestamp; }
-    public int getStatus() { return status; }
-    public String getError() { return error; }
-    public String getMessage() { return message; }
-    public String getPath() { return path; }
 }
